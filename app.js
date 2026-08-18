@@ -107,7 +107,10 @@ async function loadAutoResults() {
     $('completeBox').hidden = complete.length === 0; $('completeCount').textContent = complete.length ? `${complete.length} 只技术条件全部通过` : '';
     const recommendations = (data.candidates || []).filter((item) => item.stars >= 3).slice(0, 12);
     recommendations.forEach((candidate) => list.append(candidateCard(candidate)));
-    $('autoMessage').textContent = recommendations.length ? `${data.universe} 只流动性主板股票已扫描。${data.proxy_note || ''}` : `${data.universe} 只流动性主板股票已扫描，当前没有达到 3 星的候选。${data.proxy_note || ''}`;
+    const hasFullScope = Number.isFinite(data.main_board_total);
+    const scanned = data.main_board_total ?? data.universe ?? 0;
+    const scopeLabel = hasFullScope ? `全沪深主板报价池（${scanned} 只）` : `主板技术数据（${scanned} 只，等待全量扫描）`;
+    $('autoMessage').textContent = recommendations.length ? `已扫描${scopeLabel}。${data.proxy_note || ''}` : `已扫描${scopeLabel}，当前没有达到 3 星的候选。${data.proxy_note || ''}`;
   } catch {
     $('autoMarket').textContent = '自动结果暂不可读取，请稍后刷新或在 GitHub 手动运行筛选。';
   }
