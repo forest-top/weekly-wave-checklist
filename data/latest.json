@@ -1,7 +1,9 @@
 {
-  "generated_at": "2026-08-18T07:21:11.541491+00:00",
+  "generated_at": "2026-08-18T14:28:26.658291+00:00",
   "data_date": "2026-08-17",
-  "universe": 262,
+  "universe": 234,
+  "main_board_total": 234,
+  "bars_attempted": 234,
   "market": {
     "last_complete_date": "2026-08-17",
     "close": 3982.65,
