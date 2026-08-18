@@ -10,7 +10,10 @@ import urllib.parse
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from scoring import SOFT_KEYS, score_candidate
+try:
+    from .scoring import SOFT_KEYS, score_candidate
+except ImportError:
+    from scoring import SOFT_KEYS, score_candidate
 
 HEADERS = {"User-Agent": "Mozilla/5.0 weekly-wave-checklist"}
 TODAY_CN = (dt.datetime.now(dt.timezone.utc) + dt.timedelta(hours=8)).date().isoformat()
@@ -34,6 +37,11 @@ def is_main_board(code):
     return (code.startswith(("000", "001", "002", "003")) or code.startswith(("600", "601", "603", "605"))) and len(code) == 6
 
 
+def select_scope(stocks, limit=0):
+    main_board = [stock for stock in stocks if is_main_board(stock.get("f12"))]
+    return main_board if limit <= 0 else main_board[:limit]
+
+
 def fetch_quotes(pages):
     fields = "f12,f14,f2,f3,f6,f8,f20,f23"
     fs = "m:0+t:6,m:0+t:13,m:0+t:80,m:1+t:2,m:1+t:23"
@@ -47,23 +55,8 @@ def fetch_quotes(pages):
             continue
         if not rows:
             break
-        stocks.extend(row for row in rows if is_main_board(row.get("f12")))
-    filtered = []
-    for stock in stocks:
-        name = str(stock.get("f14") or "")
-        pb = stock.get("f23")
-        amount = stock.get("f6") or 0
-        market_cap = stock.get("f20") or 0
-        turnover = stock.get("f8") or 0
-        if name.upper().startswith(("ST", "*ST")) or pb is None:
-            continue
-        if float(pb) > 22 or amount < 1.5e8 or not 0.3 <= float(turnover) <= 25:
-            continue
-        if not 5e9 <= market_cap <= 4e12:
-            continue
-        filtered.append(stock)
-    filtered.sort(key=lambda item: item.get("f6") or 0, reverse=True)
-    return filtered
+        stocks.extend(rows)
+    return select_scope(stocks)
 
 
 def fetch_kline(code):
@@ -122,6 +115,8 @@ def weekly_macd(closes):
 
 def evaluate(stock, market):
     code = str(stock["f12"])
+    if str(stock.get("f14") or "").upper().startswith(("ST", "*ST")):
+        return None
     rows = fetch_kline(code)
     if len(rows) < 300:
         return None
@@ -146,6 +141,11 @@ def evaluate(stock, market):
     volume_ratio = average(volumes[-5:], 5) / max(average(volumes[-25:-5], 20), 0.0001)
     bias5 = abs(price / ma5 - 1)
     bias13 = abs(price / ma13 - 1)
+    pb_value = stock.get("f23")
+    try:
+        pb_value = float(pb_value)
+    except (TypeError, ValueError):
+        pb_value = None
     conditions = {
         "board_proxy": five_day_return > market["five_day_return"] and price > ma20,
         "daily_trend": ma13 > ma13_old and ma55 > ma55_old and ma13 > ma55,
@@ -153,7 +153,7 @@ def evaluate(stock, market):
         "weekly_macd": dif > 0 and histogram > 0,
         "wave_structure": price > wave_low * 1.15 and price < prior_high * 1.18,
         "wave_retracement": 0.2 <= retracement <= 0.7 and weekly_closes[-1] > wave_low,
-        "valuation": float(stock["f23"]) <= 22,
+        "valuation": pb_value is not None and pb_value <= 22,
         "entry_bias": min(bias5, bias13) <= 0.03,
         "ma_gap": 0.05 <= abs(ma5 / ma13 - 1) <= 0.15,
         "pullback": rows[-1][2] <= rows[-2][2] * 1.03 and price >= ma13 * 0.97,
@@ -175,7 +175,7 @@ def evaluate(stock, market):
         "code": code,
         "name": stock["f14"],
         "price": round(price, 2),
-        "pb": round(float(stock["f23"]), 2),
+        "pb": round(pb_value, 2) if pb_value is not None else None,
         "amount_yi": round(float(stock.get("f6") or 0) / 1e8, 2),
         "market_cap_yi": round(float(stock.get("f20") or 0) / 1e8, 1),
         "ma5": round(ma5, 2), "ma13": round(ma13, 2), "ma55": round(ma55, 2),
@@ -199,7 +199,8 @@ def build_report(pages, limit):
         "gate": index_closes[-1] > index_ma55 and index_ma55 > index_ma55_old,
         "five_day_return": index_closes[-1] / index_closes[-6] - 1,
     }
-    stocks = fetch_quotes(pages)[:limit]
+    all_stocks = fetch_quotes(pages)
+    stocks = select_scope(all_stocks, limit)
     results = []
     with ThreadPoolExecutor(max_workers=24) as pool:
         futures = [pool.submit(evaluate, stock, market) for stock in stocks]
@@ -215,6 +216,8 @@ def build_report(pages, limit):
         "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(),
         "data_date": index_rows[-1][0],
         "universe": len(stocks),
+        "main_board_total": len(all_stocks),
+        "bars_attempted": len(stocks),
         "market": market,
         "soft_rule": "12个软条件；5星=100%，4星>=90%，3星>=80%；最多容忍2个软缺口，3个及以上放弃。大盘闸门为硬条件。",
         "proxy_note": "板块条件使用个股相对大盘强度和MA20代理，最终下单前仍需人工确认行业强度。",
@@ -227,7 +230,7 @@ def build_report(pages, limit):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--pages", type=int, default=60)
-    parser.add_argument("--limit", type=int, default=800)
+    parser.add_argument("--limit", type=int, default=0, help="0 scans every main-board quote; positive values are test caps")
     parser.add_argument("--output", default="data/latest.json")
     args = parser.parse_args()
     report = build_report(args.pages, args.limit)

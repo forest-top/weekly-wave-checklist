@@ -17,7 +17,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Generate close-only shortlist
-        run: python scripts/screen.py --pages 60 --limit 800 --output data/latest.json
+        run: python scripts/screen.py --pages 60 --limit 0 --output data/latest.json
       - name: Publish latest result
         run: |
           git config user.name github-actions[bot]
