@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f766e">
+  <meta name="description" content="沪深主板周线三浪交易前检查表">
+  <link rel="icon" href="data:,">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+  <title>主板周线三浪检查表</title>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">收盘后使用 · 沪深主板</p>
+        <h1>周线三浪检查表</h1>
+      </div>
+      <button class="icon-button" id="resetButton" type="button" title="重置本次检查">↺</button>
+    </header>
+
+    <section class="decision-card" aria-live="polite">
+      <div>
+        <span class="label">当前结论</span>
+        <strong id="actionLabel">禁止买入</strong>
+      </div>
+      <div class="score-block">
+        <span id="scoreLabel">0 / 5</span>
+        <div class="progress"><span id="scoreBar"></span></div>
+      </div>
+      <p id="reasonLabel">先完成大盘和风控检查。</p>
+    </section>
+
+    <section class="panel identity-panel">
+      <div class="panel-heading"><span class="step">00</span><h2>标的与数据</h2></div>
+      <div class="grid two">
+        <label>检查日期<input id="checkDate" type="date"></label>
+        <label>股票代码<input id="stockCode" inputmode="numeric" maxlength="6" placeholder="如 600000"></label>
+      </div>
+      <div class="grid two">
+        <label>股票名称<input id="stockName" maxlength="20" placeholder="可选"></label>
+        <label>最近完整交易日<input id="dataDate" type="date"></label>
+      </div>
+      <p class="field-note" id="codeNote">只接受沪深主板：60、000、001、002、003 开头。</p>
+    </section>
+
+    <section class="panel" data-section="market">
+      <div class="panel-heading"><span class="step">01</span><h2>大盘环境</h2><span class="gate" id="marketGate">未完成</span></div>
+      <label class="check"><input type="checkbox" data-gate="market"><span>上证指数收盘价在 MA55 上方</span></label>
+      <label class="check"><input type="checkbox" data-gate="market"><span>MA55 斜率为正，且最近完整交易日数据</span></label>
+      <label class="check"><input type="checkbox" data-gate="market"><span>近 5 日没有出现放量跌破 MA55</span></label>
+    </section>
+
+    <section class="panel" data-section="board">
+      <div class="panel-heading"><span class="step">02</span><h2>板块强度</h2><span class="gate" id="boardGate">未完成</span></div>
+      <label class="check"><input type="checkbox" data-gate="board"><span>板块指数在 MA20 上方</span></label>
+      <label class="check"><input type="checkbox" data-gate="board"><span>板块近 5 日相对强度位于行业前 20%</span></label>
+      <label class="check"><input type="checkbox" data-gate="board"><span>板块广度达标：超过 55% 成分股在 MA20 上方</span></label>
+    </section>
+
+    <section class="panel" data-section="stock">
+      <div class="panel-heading"><span class="step">03</span><h2>个股趋势</h2><span class="gate" id="stockGate">未完成</span></div>
+      <label class="check"><input type="checkbox" data-gate="stock"><span>日线 MA13、MA55 均向上，且 MA13 &gt; MA55</span></label>
+      <label class="check"><input type="checkbox" data-gate="stock"><span>周线 MA5 &gt; MA13 &gt; MA55</span></label>
+      <label class="check"><input type="checkbox" data-gate="stock"><span>周 MACD 在零轴上方，红柱持续或刚金叉</span></label>
+      <label class="check"><input type="checkbox" data-gate="stock"><span>1 浪上涨、2 浪回撤不破起点、3 浪重新启动</span></label>
+      <label class="check"><input type="checkbox" data-gate="stock"><span>2 浪回撤约为 1 浪的 38.2%-61.8%，未出现加速赶顶</span></label>
+      <label class="check"><input type="checkbox" data-gate="stock"><span>PB 不高于行业 90% 分位，且盈利/ROE 没有明显恶化</span></label>
+    </section>
+
+    <section class="panel" data-section="entry">
+      <div class="panel-heading"><span class="step">04</span><h2>买点位置</h2><span class="gate" id="entryGate">未完成</span></div>
+      <label class="check"><input type="checkbox" data-gate="entry"><span>收盘价接近 MA5 或 MA13，乖离不超过 3%</span></label>
+      <label class="check"><input type="checkbox" data-gate="entry"><span>MA5 与 MA13 距离 5%-15%，不是大幅拉离</span></label>
+      <label class="check"><input type="checkbox" data-gate="entry"><span>回踩缩量并企稳，未追逐单日大涨</span></label>
+    </section>
+
+    <section class="panel" data-section="risk">
+      <div class="panel-heading"><span class="step">05</span><h2>风控与仓位</h2><span class="gate" id="riskGate">未完成</span></div>
+      <label class="check"><input type="checkbox" data-gate="risk"><span>止损价已写下，且低于入场价</span></label>
+      <label class="check"><input type="checkbox" data-gate="risk"><span>单笔账户风险不超过 0.5%-1%</span></label>
+      <label class="check"><input type="checkbox" data-gate="risk"><span>本月累计亏损未触发降风险/停止交易线</span></label>
+      <label class="check"><input type="checkbox" data-gate="risk"><span>没有同板块集中持仓或补仓冲动</span></label>
+    </section>
+
+    <section class="panel calculator">
+      <div class="panel-heading"><span class="step">06</span><h2>仓位计算</h2></div>
+      <div class="grid two">
+        <label>账户总资产<input id="account" inputmode="decimal" placeholder="100000"></label>
+        <label>单笔风险 %<input id="riskPercent" inputmode="decimal" value="0.5"></label>
+        <label>计划入场价<input id="entry" inputmode="decimal" placeholder="20"></label>
+        <label>止损价<input id="stop" inputmode="decimal" placeholder="18"></label>
+        <label>单股最大仓位 %<input id="maxPosition" inputmode="decimal" value="15"></label>
+      </div>
+      <div class="calc-result" aria-live="polite">
+        <div><span>建议股数</span><strong id="shares">0 股</strong></div>
+        <div><span>占账户</span><strong id="positionPercent">0%</strong></div>
+        <div><span>最大亏损</span><strong id="riskAmount">¥0</strong></div>
+      </div>
+    </section>
+
+    <div class="actions">
+      <button class="primary" id="updateButton" type="button">更新判断</button>
+      <button class="secondary" id="exportButton" type="button">导出本次清单</button>
+    </div>
+    <p class="footer-note">本工具只做规则检查，不接收委托，不替代你的独立判断。数据必须使用最近完整交易日。</p>
+  </main>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

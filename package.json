@@ -1,0 +1,8 @@
+{
+  "name": "weekly-wave-checklist",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/decision.test.js"
+  }
+}
