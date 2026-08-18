@@ -20,6 +20,12 @@ input:not([type="checkbox"]) { width: 100%; min-height: 42px; border: 1px solid 
 input:focus { outline: 3px solid #0f766e26; border-color: var(--teal); } .field-note { margin: 10px 0 0; }
 .check { display: flex; grid-template-columns: none; align-items: flex-start; gap: 10px; padding: 11px 0; border-top: 1px solid #edf2f5; color: var(--ink); font-size: 14px; }
 .check:first-of-type { border-top: 0; } .check input { width: 20px; height: 20px; margin: 0; accent-color: var(--teal); flex: 0 0 auto; }
+.auto-panel { border-top: 4px solid var(--teal); } .auto-market { margin: 0 0 8px; color: var(--ink); font-size: 14px; }
+.complete-box { display: flex; justify-content: space-between; gap: 10px; margin: 14px 0 4px; padding: 12px; border-radius: 7px; background: var(--teal-soft); color: var(--teal); }
+.candidate-list { display: grid; gap: 9px; margin-top: 14px; } .candidate { padding: 13px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+.candidate-top, .candidate-metrics { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }.candidate h3 { margin: 0; font-size: 16px; }.candidate code { color: var(--muted); font-size: 12px; }
+.stars { color: var(--amber); letter-spacing: .08em; white-space: nowrap; }.candidate-action { margin: 9px 0 6px; color: var(--teal); font-size: 13px; font-weight: 700; }
+.candidate-reasons { margin: 0; color: var(--muted); font-size: 12px; }.candidate-metrics { margin-top: 10px; color: var(--muted); font-size: 12px; }.run-link { display: inline-block; margin-top: 14px; color: var(--teal); font-size: 14px; font-weight: 700; text-decoration: none; }
 .calculator { background: #f8fbfc; } .calc-result { justify-content: space-between; gap: 10px; margin-top: 15px; padding-top: 14px; border-top: 1px solid var(--line); } .calc-result div { display: grid; gap: 2px; } .calc-result strong { font-size: 17px; }
 .actions { gap: 10px; margin: 18px 0; } .actions button { flex: 1; min-height: 46px; border-radius: 8px; font-weight: 700; } .primary { background: var(--teal); color: #fff; } .secondary { background: #e5eef1; color: var(--ink); }
 .footer-note { text-align: center; margin: 18px 8px 0; line-height: 1.6; }
