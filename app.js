@@ -1,4 +1,4 @@
-import { calculatePosition, evaluateChecklist, isMainBoardCode } from './src/decision.js';
+import { calculatePosition, evaluateChecklist, isMainBoardCode } from './src/decision.js?v=6';
 
 const storageKey = 'weekly-wave-checklist-v2';
 const fields = ['checkDate', 'stockCode', 'stockName', 'dataDate', 'account', 'riskPercent', 'entry', 'stop', 'maxPosition'];
