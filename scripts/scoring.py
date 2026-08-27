@@ -21,9 +21,9 @@ def score_candidate(metrics):
     misses = total - passed
     if ratio == 1:
         stars = 5
-    elif ratio >= 0.9:
+    elif ratio >= 0.75:
         stars = 4
-    elif ratio >= 0.8:
+    elif ratio >= 2 / 3:
         stars = 3
     elif ratio >= 0.7:
         stars = 2
@@ -36,9 +36,9 @@ def score_candidate(metrics):
         action = "放弃：数据不完整"
     elif ratio >= 1:
         action = "允许进入人工执行"
-    elif ratio >= 0.9:
+    elif ratio >= 0.75:
         action = "等待补齐后小仓"
-    elif ratio >= 0.8:
+    elif ratio >= 2 / 3:
         action = "仅观察/模拟"
     else:
         action = "放弃"

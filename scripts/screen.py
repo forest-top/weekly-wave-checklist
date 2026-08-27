@@ -95,7 +95,7 @@ def fetch_quotes(pages):
 
 def fetch_kline(code):
     symbol = str(code) if str(code).startswith(("sh", "sz")) else ("sh" if str(code).startswith("6") else "sz") + str(code)
-    params = urllib.parse.urlencode({"param": f"{symbol},day,,,900,qfq"})
+    params = urllib.parse.urlencode({"param": f"{symbol},day,,,360,qfq"})
     payload = fetch_json("https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?" + params).get("data", {}).get(symbol, {})
     rows = payload.get("qfqday") or payload.get("day") or []
     return [row for row in rows if row and row[0] <= TODAY_CN]
@@ -190,7 +190,7 @@ def evaluate(stock, market):
         "valuation": pb_value is not None and pb_value <= 22,
         "entry_bias": min(bias5, bias13) <= 0.03,
         "ma_gap": 0.05 <= abs(ma5 / ma13 - 1) <= 0.15,
-        "pullback": rows[-1][2] <= rows[-2][2] * 1.03 and price >= ma13 * 0.97,
+        "pullback": price <= float(rows[-2][2]) * 1.03 and price >= ma13 * 0.97,
         "volume": volume_ratio <= 1.3,
         "not_extended": price <= prior_high * 1.18,
     }
@@ -253,7 +253,7 @@ def build_report(pages, limit):
         "main_board_total": len(all_stocks),
         "bars_attempted": len(stocks),
         "market": market,
-        "soft_rule": "12个软条件；5星=100%，4星>=90%，3星>=80%；最多容忍2个软缺口，3个及以上放弃。大盘指数仅作参考，不再作为买入硬拦截。",
+        "soft_rule": "12个软条件；5星=100%，4星>=75%（至少9项），3星>=66.7%（至少8项）；最多容忍4个软缺口，5个及以上放弃。大盘指数仅作参考，不再作为买入硬拦截。",
         "proxy_note": "板块条件使用个股相对大盘强度和MA20代理，最终下单前仍需人工确认行业强度。",
         "complete_matches": [row for row in results if row["stars"] == 5],
         "candidates": results[:50],

@@ -1,4 +1,5 @@
 import unittest
+import datetime as dt
 from unittest.mock import patch
 
 from scripts import screen
@@ -6,6 +7,23 @@ from scripts.screen import select_scope
 
 
 class ScreenScopeTests(unittest.TestCase):
+
+    @patch("scripts.screen.fetch_kline")
+    def test_evaluate_accepts_string_prices_from_kline_source(self, fetch_kline):
+        start = dt.date(2025, 1, 1)
+        rows = []
+        for offset in range(500):
+            date = start + dt.timedelta(days=offset)
+            if date.weekday() < 5:
+                price = 10 + len(rows) * 0.01
+                rows.append([date.isoformat(), str(price - 0.1), str(price), str(price + 0.1), str(price - 0.2), "1000"])
+        fetch_kline.return_value = rows
+        result = screen.evaluate(
+            {"f12": "000001", "f14": "平安银行", "f23": 1, "f6": 0, "f20": 0},
+            {"five_day_return": 0, "gate": False},
+        )
+        self.assertIsNotNone(result)
+        self.assertEqual(result["total"], 12)
     def test_zero_limit_keeps_every_main_board_quote(self):
         rows = [
             {"f12": "000001"}, {"f12": "600000"}, {"f12": "300750"}, {"f12": "688981"},
@@ -28,6 +46,7 @@ class ScreenScopeTests(unittest.TestCase):
         }
         rows = screen.fetch_kline("000001")
         self.assertEqual([row[0] for row in rows], ["2026-08-26", screen.TODAY_CN])
+        self.assertIn("param=sz000001%2Cday%2C%2C%2C360%2Cqfq", fetch_json.call_args.args[0])
 
     def test_rejects_an_incomplete_main_board_universe(self):
         with self.assertRaises(RuntimeError):

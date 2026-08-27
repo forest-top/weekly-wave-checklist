@@ -17,18 +17,19 @@ class ScoringTests(unittest.TestCase):
         self.assertEqual(result["soft_misses"], 0)
         self.assertEqual(result["action"], "允许进入人工执行")
 
-    def test_two_soft_misses_is_three_star_observation(self):
-        misses = dict.fromkeys(SOFT_KEYS[:2], False)
-        result = score_candidate(candidate(**misses))
-        self.assertEqual(result["stars"], 3)
-        self.assertEqual(result["soft_misses"], 2)
-        self.assertEqual(result["action"], "仅观察/模拟")
-
-    def test_three_soft_misses_is_not_recommended(self):
+    def test_three_soft_misses_is_four_star_small_position_candidate(self):
         misses = dict.fromkeys(SOFT_KEYS[:3], False)
         result = score_candidate(candidate(**misses))
-        self.assertEqual(result["stars"], 2)
-        self.assertEqual(result["action"], "放弃")
+        self.assertEqual(result["stars"], 4)
+        self.assertEqual(result["soft_misses"], 3)
+        self.assertEqual(result["action"], "等待补齐后小仓")
+
+    def test_four_soft_misses_is_three_star_observation(self):
+        misses = dict.fromkeys(SOFT_KEYS[:4], False)
+        result = score_candidate(candidate(**misses))
+        self.assertEqual(result["stars"], 3)
+        self.assertEqual(result["soft_misses"], 4)
+        self.assertEqual(result["action"], "仅观察/模拟")
 
     def test_market_gate_is_advisory_for_five_star_technical_setup(self):
         result = score_candidate(candidate(market_gate=False))
