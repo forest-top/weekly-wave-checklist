@@ -49,6 +49,17 @@ def validate_main_board_scope(stocks):
     return stocks
 
 
+def fetch_quote_page(url):
+    hosts = ("push2.eastmoney.com", "82.push2.eastmoney.com")
+    last_error = None
+    for host in hosts:
+        try:
+            return fetch_json(url.replace("push2.eastmoney.com", host, 1))
+        except Exception as error:
+            last_error = error
+    raise last_error
+
+
 def fetch_quotes(pages):
     fields = "f12,f14,f2,f3,f6,f8,f20,f23"
     fs = "m:0+t:6,m:0+t:13,m:0+t:80,m:1+t:2,m:1+t:23"
@@ -57,7 +68,7 @@ def fetch_quotes(pages):
         params = {"pn": page, "pz": 100, "po": 1, "np": 1, "fltt": 2, "invt": 2, "fid": "f6", "fs": fs, "fields": fields}
         url = "https://push2.eastmoney.com/api/qt/clist/get?" + urllib.parse.urlencode(params)
         try:
-            payload = fetch_json(url).get("data", {})
+            payload = fetch_quote_page(url).get("data", {})
             rows = payload.get("diff", [])
         except Exception as error:
             raise RuntimeError(f"quote page {page} is unavailable") from error

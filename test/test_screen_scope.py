@@ -33,6 +33,14 @@ class ScreenScopeTests(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             screen.validate_main_board_scope([{"f12": "000001"}] * 57)
 
+    @patch("scripts.screen.fetch_json")
+    def test_retries_a_quote_page_on_an_alternate_official_host(self, fetch_json):
+        fetch_json.side_effect = [OSError("502"), {"data": {"diff": [{"f12": "000001"}]}}]
+        payload = screen.fetch_quote_page("https://push2.eastmoney.com/api/qt/clist/get?pn=1")
+        self.assertEqual(payload["data"]["diff"][0]["f12"], "000001")
+        self.assertEqual(fetch_json.call_count, 2)
+        self.assertIn("82.push2.eastmoney.com", fetch_json.call_args_list[1].args[0])
+
 
 if __name__ == "__main__":
     unittest.main()
