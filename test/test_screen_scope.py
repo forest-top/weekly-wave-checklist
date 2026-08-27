@@ -41,6 +41,14 @@ class ScreenScopeTests(unittest.TestCase):
         self.assertEqual(fetch_json.call_count, 2)
         self.assertIn("82.push2.eastmoney.com", fetch_json.call_args_list[1].args[0])
 
+    @patch("scripts.screen.fetch_cninfo_quotes")
+    @patch("scripts.screen.fetch_quote_page", side_effect=OSError("source unavailable"))
+    def test_falls_back_to_cninfo_when_quote_pages_are_unavailable(self, _, fetch_cninfo_quotes):
+        fetch_cninfo_quotes.return_value = [{"f12": "000001", "f14": "平安银行"}] * 2500
+        stocks = screen.fetch_quotes(1)
+        self.assertEqual(len(stocks), 2500)
+        fetch_cninfo_quotes.assert_called_once_with()
+
 
 if __name__ == "__main__":
     unittest.main()

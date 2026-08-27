@@ -18,6 +18,7 @@ except ImportError:
 HEADERS = {"User-Agent": "Mozilla/5.0 weekly-wave-checklist"}
 TODAY_CN = (dt.datetime.now(dt.timezone.utc) + dt.timedelta(hours=8)).date().isoformat()
 MIN_MAIN_BOARD_UNIVERSE = 2500
+CNINFO_STOCK_LIST_URL = "https://www.cninfo.com.cn/new/data/szse_stock.json"
 
 
 def fetch_json(url, retries=3):
@@ -60,25 +61,36 @@ def fetch_quote_page(url):
     raise last_error
 
 
+def fetch_cninfo_quotes():
+    payload = fetch_json(CNINFO_STOCK_LIST_URL)
+    stocks = []
+    for item in payload.get("stockList", []):
+        code = str(item.get("code") or "")
+        if item.get("category") == "A股" and is_main_board(code):
+            stocks.append({"f12": code, "f14": item.get("zwjc") or code, "f2": None, "f3": None,
+                           "f6": 0, "f8": 0, "f20": 0, "f23": None})
+    return validate_main_board_scope(stocks)
+
+
 def fetch_quotes(pages):
     fields = "f12,f14,f2,f3,f6,f8,f20,f23"
     fs = "m:0+t:6,m:0+t:13,m:0+t:80,m:1+t:2,m:1+t:23"
     stocks = []
-    for page in range(1, pages + 1):
-        params = {"pn": page, "pz": 100, "po": 1, "np": 1, "fltt": 2, "invt": 2, "fid": "f6", "fs": fs, "fields": fields}
-        url = "https://push2.eastmoney.com/api/qt/clist/get?" + urllib.parse.urlencode(params)
-        try:
+    try:
+        for page in range(1, pages + 1):
+            params = {"pn": page, "pz": 100, "po": 1, "np": 1, "fltt": 2, "invt": 2, "fid": "f6", "fs": fs, "fields": fields}
+            url = "https://push2.eastmoney.com/api/qt/clist/get?" + urllib.parse.urlencode(params)
             payload = fetch_quote_page(url).get("data", {})
             rows = payload.get("diff", [])
-        except Exception as error:
-            raise RuntimeError(f"quote page {page} is unavailable") from error
-        if not rows:
-            expected_pages = math.ceil(int(payload.get("total") or 0) / 100)
-            if expected_pages and page <= min(pages, expected_pages):
-                raise RuntimeError(f"quote page {page} returned no data before the expected end")
-            break
-        stocks.extend(rows)
-    return validate_main_board_scope(select_scope(stocks))
+            if not rows:
+                expected_pages = math.ceil(int(payload.get("total") or 0) / 100)
+                if expected_pages and page <= min(pages, expected_pages):
+                    raise RuntimeError(f"quote page {page} returned no data before the expected end")
+                break
+            stocks.extend(rows)
+        return validate_main_board_scope(select_scope(stocks))
+    except Exception:
+        return fetch_cninfo_quotes()
 
 
 def fetch_kline(code):
