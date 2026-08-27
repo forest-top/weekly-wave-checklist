@@ -1,16 +1,16 @@
 {
-  "generated_at": "2026-08-27T07:22:01.231139+00:00",
-  "data_date": "2026-08-26",
-  "universe": 0,
-  "main_board_total": 0,
-  "bars_attempted": 0,
+  "generated_at": "2026-08-27T13:29:31.342902+00:00",
+  "data_date": "2026-08-27",
+  "universe": 3496,
+  "main_board_total": 3496,
+  "bars_attempted": 3496,
   "market": {
-    "last_complete_date": "2026-08-26",
-    "close": 3912.52,
-    "ma55": 3955.75,
-    "ma55_slope_5d_pct": -0.296,
+    "last_complete_date": "2026-08-27",
+    "close": 3956.57,
+    "ma55": 3955.08,
+    "ma55_slope_5d_pct": -0.23,
     "gate": false,
-    "five_day_return": 0.0046476753919710845
+    "five_day_return": 0.01353836853052992
   },
   "soft_rule": "12个软条件；5星=100%，4星>=90%，3星>=80%；最多容忍2个软缺口，3个及以上放弃。大盘闸门为硬条件。",
   "proxy_note": "板块条件使用个股相对大盘强度和MA20代理，最终下单前仍需人工确认行业强度。",
