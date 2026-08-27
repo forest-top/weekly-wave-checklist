@@ -21,6 +21,11 @@ function groupPassed(name) {
 function updateGate(name) {
   const passed = groupPassed(name);
   const element = $(`${name}Gate`);
+  if (name === 'market') {
+    element.textContent = '仅参考';
+    element.style.color = 'var(--muted)';
+    return passed;
+  }
   element.textContent = passed ? '通过' : '未完成';
   element.style.color = passed ? 'var(--teal)' : 'var(--muted)';
   return passed;
@@ -54,7 +59,7 @@ function updateDecision() {
   const card = document.querySelector('.decision-card');
   card.classList.remove('status-ok', 'status-wait', 'status-stop');
   card.classList.add(result.action === '允许买入' ? 'status-ok' : result.action === '等待确认' ? 'status-wait' : 'status-stop');
-  $('reasonLabel').textContent = !codeValid ? '股票代码不是沪深主板，禁止进入买入清单。' : result.action === '允许买入' ? '全部条件通过，可按计算仓位执行。' : result.action === '等待确认' ? '还有条件未完成，只能观察。' : '大盘或风控未通过，禁止买入。';
+  $('reasonLabel').textContent = !codeValid ? '股票代码不是沪深主板，禁止进入买入清单。' : result.action === '允许买入' ? '全部条件通过，可按计算仓位执行。' : result.action === '等待确认' ? '还有条件未完成，只能观察。' : '风控未通过，禁止买入。';
   saveState(); updatePosition();
 }
 function restore() {
@@ -100,9 +105,10 @@ async function loadAutoResults() {
     const list = $('candidateList'); list.replaceChildren();
     if (data.status !== 'ok') { $('autoMessage').textContent = data.message || '尚未生成扫描结果。'; return; }
     $('autoUpdated').textContent = data.data_date || '已更新';
-    $('autoRule').textContent = data.soft_rule || $('autoRule').textContent;
+    const rule = data.soft_rule || $('autoRule').textContent;
+    $('autoRule').textContent = rule.replace('大盘闸门为硬条件。', '大盘指数仅作参考，不再作为买入硬拦截。');
     const market = data.market || {};
-    $('autoMarket').textContent = `上证 ${market.close ?? '-'} · MA55 ${market.ma55 ?? '-'} · 5日斜率 ${market.ma55_slope_5d_pct ?? '-'}% · ${market.gate ? '大盘闸门通过' : '大盘闸门未通过，禁止买入'}`;
+    $('autoMarket').textContent = `上证 ${market.close ?? '-'} · MA55 ${market.ma55 ?? '-'} · 5日斜率 ${market.ma55_slope_5d_pct ?? '-'}% · 大盘指数仅作参考`;
     const complete = data.complete_matches || [];
     $('completeBox').hidden = complete.length === 0; $('completeCount').textContent = complete.length ? `${complete.length} 只技术条件全部通过` : '';
     const recommendations = (data.candidates || []).filter((item) => item.stars >= 3).slice(0, 12);

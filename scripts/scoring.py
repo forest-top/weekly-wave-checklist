@@ -34,8 +34,6 @@ def score_candidate(metrics):
         action = "放弃：非沪深主板"
     elif not metrics.get("data_complete", False):
         action = "放弃：数据不完整"
-    elif not metrics.get("market_gate", False):
-        action = "禁止买入：大盘闸门未通过"
     elif ratio >= 1:
         action = "允许进入人工执行"
     elif ratio >= 0.9:

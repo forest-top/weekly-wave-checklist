@@ -253,7 +253,7 @@ def build_report(pages, limit):
         "main_board_total": len(all_stocks),
         "bars_attempted": len(stocks),
         "market": market,
-        "soft_rule": "12个软条件；5星=100%，4星>=90%，3星>=80%；最多容忍2个软缺口，3个及以上放弃。大盘闸门为硬条件。",
+        "soft_rule": "12个软条件；5星=100%，4星>=90%，3星>=80%；最多容忍2个软缺口，3个及以上放弃。大盘指数仅作参考，不再作为买入硬拦截。",
         "proxy_note": "板块条件使用个股相对大盘强度和MA20代理，最终下单前仍需人工确认行业强度。",
         "complete_matches": [row for row in results if row["stars"] == 5],
         "candidates": results[:50],

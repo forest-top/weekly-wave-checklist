@@ -11,7 +11,7 @@ test('accepts only Shanghai and Shenzhen main-board codes', () => {
   assert.equal(isMainBoardCode('830799'), false);
 });
 
-test('requires the market gate before allowing a buy decision', () => {
+test('does not block a buy decision when the market reference is disabled', () => {
   const result = evaluateChecklist({
     marketGate: false,
     boardGate: true,
@@ -19,8 +19,9 @@ test('requires the market gate before allowing a buy decision', () => {
     entryGate: true,
     riskGate: true,
   });
-  assert.equal(result.action, '禁止买入');
+  assert.equal(result.action, '允许买入');
   assert.equal(result.score, 4);
+  assert.equal(result.total, 4);
 });
 
 test('blocks a non-main-board code even when every checklist gate passes', () => {

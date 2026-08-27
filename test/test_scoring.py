@@ -30,10 +30,10 @@ class ScoringTests(unittest.TestCase):
         self.assertEqual(result["stars"], 2)
         self.assertEqual(result["action"], "放弃")
 
-    def test_market_gate_is_hard_stop_even_for_five_star_technical_setup(self):
+    def test_market_gate_is_advisory_for_five_star_technical_setup(self):
         result = score_candidate(candidate(market_gate=False))
         self.assertEqual(result["stars"], 5)
-        self.assertEqual(result["action"], "禁止买入：大盘闸门未通过")
+        self.assertEqual(result["action"], "允许进入人工执行")
 
 
 if __name__ == "__main__":

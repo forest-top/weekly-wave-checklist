@@ -4,9 +4,9 @@ export function isMainBoardCode(value) {
 }
 
 export function evaluateChecklist(gates) {
-  const keys = ['marketGate', 'boardGate', 'stockGate', 'entryGate', 'riskGate'];
+  const keys = ['boardGate', 'stockGate', 'entryGate', 'riskGate'];
   const score = keys.reduce((total, key) => total + (gates[key] ? 1 : 0), 0);
-  const action = gates.codeValid === false || !gates.marketGate || !gates.riskGate
+  const action = gates.codeValid === false || !gates.riskGate
     ? '禁止买入'
     : score === keys.length
       ? '允许买入'
