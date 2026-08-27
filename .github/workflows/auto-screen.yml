@@ -2,7 +2,7 @@ name: Auto screen main-board stocks
 
 on:
   schedule:
-    - cron: '1 7 * * 1-5'
+    - cron: '45 6 * * 1-5'
   workflow_dispatch:
 
 permissions:

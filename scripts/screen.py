@@ -17,6 +17,7 @@ except ImportError:
 
 HEADERS = {"User-Agent": "Mozilla/5.0 weekly-wave-checklist"}
 TODAY_CN = (dt.datetime.now(dt.timezone.utc) + dt.timedelta(hours=8)).date().isoformat()
+MIN_MAIN_BOARD_UNIVERSE = 2500
 
 
 def fetch_json(url, retries=3):
@@ -42,6 +43,12 @@ def select_scope(stocks, limit=0):
     return main_board if limit <= 0 else main_board[:limit]
 
 
+def validate_main_board_scope(stocks):
+    if len(stocks) < MIN_MAIN_BOARD_UNIVERSE:
+        raise RuntimeError(f"main-board quote universe is incomplete: {len(stocks)} stocks found")
+    return stocks
+
+
 def fetch_quotes(pages):
     fields = "f12,f14,f2,f3,f6,f8,f20,f23"
     fs = "m:0+t:6,m:0+t:13,m:0+t:80,m:1+t:2,m:1+t:23"
@@ -50,13 +57,17 @@ def fetch_quotes(pages):
         params = {"pn": page, "pz": 100, "po": 1, "np": 1, "fltt": 2, "invt": 2, "fid": "f6", "fs": fs, "fields": fields}
         url = "https://push2.eastmoney.com/api/qt/clist/get?" + urllib.parse.urlencode(params)
         try:
-            rows = fetch_json(url).get("data", {}).get("diff", [])
-        except Exception:
-            continue
+            payload = fetch_json(url).get("data", {})
+            rows = payload.get("diff", [])
+        except Exception as error:
+            raise RuntimeError(f"quote page {page} is unavailable") from error
         if not rows:
+            expected_pages = math.ceil(int(payload.get("total") or 0) / 100)
+            if expected_pages and page <= min(pages, expected_pages):
+                raise RuntimeError(f"quote page {page} returned no data before the expected end")
             break
         stocks.extend(rows)
-    return select_scope(stocks)
+    return validate_main_board_scope(select_scope(stocks))
 
 
 def fetch_kline(code):
@@ -64,7 +75,7 @@ def fetch_kline(code):
     params = urllib.parse.urlencode({"param": f"{symbol},day,,,900,qfq"})
     payload = fetch_json("https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?" + params).get("data", {}).get(symbol, {})
     rows = payload.get("qfqday") or payload.get("day") or []
-    return [row for row in rows if row and row[0] < TODAY_CN]
+    return [row for row in rows if row and row[0] <= TODAY_CN]
 
 
 def average(values, window):
